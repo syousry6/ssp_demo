@@ -222,7 +222,7 @@ kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/rele
 ```
 
 
-## Step 3: Create two services yaml
+## Step 3: Active & Preview services
 You will notice that the blueGreen strategy requires two services: an activeService and a previewService. Both settings refer to a Kubernetes service resource as follows:
 
 
@@ -271,7 +271,7 @@ Note that we also use a configMapGenerator that creates a ConfigMap that sets a 
 
 
 
-`kustomization.yaml`
+`ssp_demo/argo-rollouts/kustomization.yaml`
 ```
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
