@@ -362,3 +362,10 @@ To make Revision 2 which is the preview service active, the v2 deployment, We ne
 
 Above, we can clearly see the rollout now uses two ReplicaSets to run the active and preview pods. The rollout also modified the service selectors and the labels on the pods by adding a label like rollouts-pod-template-hash:758d6b4845. Each revision has its own hash.
 
+
+## Step 7: Rollback to v1
+ ![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image8.png)
+
+
+If we port forward to the active service and view the welcome message you will see it has changed back to Hello from v1!
+ ![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image9.png)
