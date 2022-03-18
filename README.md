@@ -12,7 +12,7 @@ kubectl create namespace blue-green
 
 ## Step 2: Create a Service Account
 
-`We’ll create a service account called demo-user in the blue-green namespace`
+###We’ll create a service account called demo-user in the blue-green namespace
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -28,13 +28,13 @@ EOF
 
 A role contains rules that represent a set of permissions that grant access to resources within a namespace.
 
-`First confirm API versions for RBAC available in your Kubernetes cluster:`
+###First confirm API versions for RBAC available in your Kubernetes cluster:
 ```
 kubectl api-versions| grep  rbac   
 ```
 
 
-`Let’s create a role which will give created account complete access to namespace resources.`
+###Let’s create a role which will give created account complete access to namespace resources.
 
 ```
 cat <<EOF | kubectl apply -f -
@@ -76,13 +76,13 @@ roleRef:
 EOF
 ```
 
-`Confirm role binding creation using the following command:`
+###Confirm role binding creation using the following command:
 ```
 kubectl get rolebindings --namespace blue-green
 ```
 
 
-`Check user token name:`
+###Check user token name:
 
 ```
 $ kubectl describe sa demo-user -n blue-green
@@ -98,7 +98,7 @@ Events:
 ```
 
 
-`Get service account token to be used to access Kubernetes  through kubectl command line.`
+###Get service account token to be used to access Kubernetes  through kubectl command line.
 ```
 export NAMESPACE="blue-green"
 export K8S_USER="demo-user"
@@ -113,7 +113,7 @@ eyJhbGciOiJSUzI1NiIsImtpZCI6ImR2V0dxTEpYUUV6alpzMWFxOThyMTN0dDlkT2dWTlE3VlNuTDFE
 ```
 
 
-`Get certificate data`
+###Get certificate data
 ```
 kubectl  -n ${NAMESPACE} get secret `kubectl -n ${NAMESPACE} get secret | (grep ${K8S_USER} || echo "$_") | awk '{print $1}'` -o "jsonpath={.data['ca\.crt']}" 
 ```
@@ -130,7 +130,7 @@ kubeconfig path is ~/.kube
 If you want to configure kubectl with obtained credentials, it will look something like below.
 
 
-`Retrieve the endpoint for your cluster`
+###Retrieve the endpoint for your cluster
 ```
 aws eks describe-cluster \
     --region us-west-2 \
@@ -148,7 +148,7 @@ https://1C5E3EA44D66F9AB9B2CE67AEF2571F7.gr7.us-west-2.eks.amazonaws.com
 
 
 
-`Create new config file for this demo as follows:`
+###Create new config file for this demo as follows:
 ```
 apiVersion: v1
 clusters:
@@ -179,7 +179,7 @@ users:
 
 
 
-`Add that file path to your KUBECONFIG environment variable`
+###Add that file path to your KUBECONFIG environment variable
 ```
 export KUBECONFIG=$KUBECONFIG:~/.kube/config-my-cluster
 ```
