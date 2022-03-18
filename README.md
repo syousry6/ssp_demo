@@ -260,7 +260,6 @@ spec:
 **we will use Kustomize to deploy everything**
 
 
-
 ## Step 4: Deploying a rollout with Kustomize
 
 Argo Rollouts uses a replacement for a Deployment resource: a Rollout. The YAML for a Rollout is almost identical to a Deployment except that the apiVersion and Kind are different. In the spec you can add a strategy section to specify whether you want a blueGreen or a canary rollout.
@@ -307,7 +306,7 @@ configMapGenerator:
 **To deploy with Kustomize, we can run**
 
 ```
-kubectl apply -k .
+kubectl apply -k . --validate=false
 ```
 
 
@@ -320,7 +319,7 @@ hen we initially deploy our application, there is only one version of our app. T
 Argo Rollouts has a UI you can start with:
 
 ```
-kubectl argo rollouts dashboard -n blue-green
+kubectl argo rollouts dashboard -n ssp-demo
 ```
 
 
@@ -328,7 +327,7 @@ kubectl argo rollouts dashboard -n blue-green
 
 ## Step 6: Upgrading to new application version v2
 
-We will now upgrade to a new version of the application: v2. To simulate this, we can simply modify the WELCOME message in the ConfigMapGenerator in kustomization.yaml. When we run kubectl apply -k . again, Kustomize will create a new ConfigMap with a different name (containing a hash) and will update that name in the pod template of the rollout. When you update the pod template of the rollout, the rollout knows it needs to upgrade with the blue-green strategy. This, again, is identical to how a deployment behaves. In the UI, we now see:
+We will now upgrade to a new version of the application: v2. To simulate this, we can simply modify the WELCOME message in the ConfigMapGenerator in kustomization.yaml. When we run kubectl apply -k . again, Kustomize will create a new ConfigMap with a different name (containing a hash) and will update that name in the pod template of the rollout. When you update the pod template of the rollout, the rollout knows it needs to upgrade with the ssp-demo strategy. This, again, is identical to how a deployment behaves. In the UI, we now see:
 
 
 
