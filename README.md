@@ -198,6 +198,9 @@ Error from server (Forbidden): nodes is forbidden: User "system:serviceaccount:s
 ```
 
 
+
+_________________________________________________________________________________________
+
 # ssp-demo deployments with Argo Rollouts
 
 ## Step 1: Installing Argo Rollouts
