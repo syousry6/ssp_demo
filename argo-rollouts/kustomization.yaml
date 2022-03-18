@@ -2,11 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: ssp-demo
  
-nameSuffix: -geba
-namePrefix: dev-
+# nameSuffix: -demo
+namePrefix: poc-
  
 commonLabels:
-  app: superapi
+  app: demo-api
   version: v1
   env: dev
  
@@ -16,12 +16,12 @@ configurations:
  
 resources:
 #- namespace.yaml
-  - deployment.yaml
+  - rollout.yaml
   - service-active.yaml
   - service-preview.yaml
  
 configMapGenerator:
-- name: superapi-config
+- name: demoapi-config
   literals:
     - WELCOME=Hello from v1!
     - PORT=8080 

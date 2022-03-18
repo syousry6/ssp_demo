@@ -230,10 +230,10 @@ You will notice that the blueGreen strategy requires two services: an activeServ
 kind: Service
 apiVersion: v1
 metadata:
-  name:  superapi-svc-active
+  name:  demo-active-svc
 spec:
   selector:
-    app:  superapi
+    app:  demo-api
   type:  ClusterIP
   ports:
   - name:  http
@@ -245,10 +245,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name:  superapi-svc-preview
+  name:  demo-preview-svc
 spec:
   selector:
-    app:  superapi
+    app:  demo-api
   type:  ClusterIP
   ports:
   - name:  http
@@ -276,11 +276,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: ssp-demo
  
-nameSuffix: -geba
-namePrefix: dev-
+# nameSuffix: -demo
+namePrefix: poc-
  
 commonLabels:
-  app: superapi
+  app: demo-api
   version: v1
   env: dev
  
@@ -295,10 +295,11 @@ resources:
   - service-preview.yaml
  
 configMapGenerator:
-- name: superapi-config
+- name: demoapi-config
   literals:
     - WELCOME=Hello from v1!
     - PORT=8080 
+
 ```
 
 

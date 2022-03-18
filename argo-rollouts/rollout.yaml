@@ -1,16 +1,16 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: superapi
+  name: demo-api
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: superapi
+      app: demo-api
   template:
     metadata:
       labels:
-        app: superapi
+        app: demo-api
     spec:
       containers:
       - name: superapi
@@ -26,12 +26,12 @@ spec:
           - name: WELCOME
             valueFrom:
               configMapKeyRef:
-                name: superapi-config
+                name: demoapi-config
                 key: WELCOME
         ports:
         - containerPort: 8080
   strategy:
     blueGreen:
-      activeService: superapi-svc-active
-      previewService: superapi-svc-preview
+      activeService: demo-active-svc
+      previewService: demo-preview-svc
       autoPromotionEnabled: false
