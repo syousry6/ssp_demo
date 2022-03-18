@@ -315,7 +315,7 @@ kubectl apply -k .
 
 ## Step 5: Checking the initial rollout with the UI
 
-hen we initially deploy our application, there is only one version of our app. The rollout uses a ReplicaSet to deploy two pods, similarly to a Deployment. Both the activeService and the previewService point to these two pods.
+Then we initially deploy our application, there is only one version of our app. The rollout uses a ReplicaSet to deploy two pods, similarly to a Deployment. Both the activeService and the previewService point to these two pods.
 
 Argo Rollouts has a UI you can start with:
 
@@ -323,19 +323,34 @@ Argo Rollouts has a UI you can start with:
 kubectl argo rollouts dashboard -n ssp-demo
 ```
 
+![foto1](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image.png)
 
+
+**To view the welcome message on the browser**
+
+We can do port forwarding to the services 
+```
+kubectl port-forward svc/poc-demo-active-svc 8080:80 -n ssp-demo
+```
 
 
 ## Step 6: Upgrading to new application version v2
 
 We will now upgrade to a new version of the application: v2. To simulate this, we can simply modify the WELCOME message in the ConfigMapGenerator in kustomization.yaml. When we run kubectl apply -k . again, Kustomize will create a new ConfigMap with a different name (containing a hash) and will update that name in the pod template of the rollout. When you update the pod template of the rollout, the rollout knows it needs to upgrade with the ssp-demo strategy. This, again, is identical to how a deployment behaves. In the UI, we now see:
 
+![foto2](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image2.png)
+
 
 
 There are now two revisions, both backed by a ReplicaSet. Each ReplicaSet controls two pods. One set of pods is for the active service, the other set for the preview. We can click on the rollout to see those details:
 
+![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image3.png)
+
+
+
 
 Above, we can clearly see that revision one is the stable and active service. That is our initial v1 deployment. Revision 2 is the preview service, the v2 deployment. We can port forward to that service and view the welcome message:
+
 
 
 Above, we can clearly see the rollout now uses two ReplicaSets to run the active and preview pods. The rollout also modified the service selectors and the labels on the pods by adding a label like rollouts-pod-template-hash:758d6b4845. Each revision has its own hash.
