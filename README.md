@@ -203,7 +203,16 @@ ________________________________________________________________________________
 
 # ssp-demo deployments with Argo Rollouts
 
-## Step 1: Installing Argo Rollouts
+## Step 1: Create a namespace
+
+Create ssp-demo namepsace if it is not created, We can also add the creation step to kustomization.yaml.
+
+```
+kubectl create namespace ssp-demo
+```
+
+
+## Step 2: Installing Argo Rollouts
 
 Let’s start by creating a namespace that will be used for this demo `ssp-demo`
 
@@ -213,7 +222,7 @@ kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/rele
 ```
 
 
-## Step 2: Create two services yaml
+## Step 3: Create two services yaml
 You will notice that the blueGreen strategy requires two services: an activeService and a previewService. Both settings refer to a Kubernetes service resource as follows:
 
 
@@ -252,7 +261,7 @@ spec:
 
 
 
-## Step 3: Deploying a rollout with Kustomize
+## Step 4: Deploying a rollout with Kustomize
 
 Argo Rollouts uses a replacement for a Deployment resource: a Rollout. The YAML for a Rollout is almost identical to a Deployment except that the apiVersion and Kind are different. In the spec you can add a strategy section to specify whether you want a blueGreen or a canary rollout.
 
@@ -304,7 +313,7 @@ kubectl apply -k .
 
 
 
-## Step 4: Checking the initial rollout with the UI
+## Step 5: Checking the initial rollout with the UI
 
 hen we initially deploy our application, there is only one version of our app. The rollout uses a ReplicaSet to deploy two pods, similarly to a Deployment. Both the activeService and the previewService point to these two pods.
 
@@ -317,7 +326,7 @@ kubectl argo rollouts dashboard -n blue-green
 
 
 
-## Step 5: Upgrading to new application version v2
+## Step 6: Upgrading to new application version v2
 
 We will now upgrade to a new version of the application: v2. To simulate this, we can simply modify the WELCOME message in the ConfigMapGenerator in kustomization.yaml. When we run kubectl apply -k . again, Kustomize will create a new ConfigMap with a different name (containing a hash) and will update that name in the pod template of the rollout. When you update the pod template of the rollout, the rollout knows it needs to upgrade with the blue-green strategy. This, again, is identical to how a deployment behaves. In the UI, we now see:
 
