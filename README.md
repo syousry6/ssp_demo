@@ -348,9 +348,17 @@ There are now two revisions, both backed by a ReplicaSet. Each ReplicaSet contro
 
 
 
+Above, we can clearly see that revision one is the stable and active service. That is our initial v1 deployment. 
 
-Above, we can clearly see that revision one is the stable and active service. That is our initial v1 deployment. Revision 2 is the preview service, the v2 deployment. We can port forward to that service and view the welcome message:
+To make Revision 2 which is the preview service active, the v2 deployment, We need to PROMOTE Revision 2 to be the active one as follows 
+![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image4.png)
+![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image5.png)
+![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image6.png)
 
+
+ We can port forward to that service and view the welcome message which will be changed to Hello from v2!:
+ ![foto3](https://raw.githubusercontent.com/syousry6/ssp_demo/main/images/image7.png)
 
 
 Above, we can clearly see the rollout now uses two ReplicaSets to run the active and preview pods. The rollout also modified the service selectors and the labels on the pods by adding a label like rollouts-pod-template-hash:758d6b4845. Each revision has its own hash.
+
