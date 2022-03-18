@@ -4,22 +4,22 @@ This is the instructions to create a user and restrict user to access only one n
 
 ## Step 1: Create a namespace
 
-Let’s start by creating a namespace that will be used for this demo `blue-green`
+Let’s start by creating a namespace that will be used for this demo `ssp-demo`
 
 ```
-kubectl create namespace blue-green
+kubectl create namespace ssp-demo
 ```
 
 ## Step 2: Create a Service Account
 
-**We’ll create a service account called demo-user in the blue-green namespace**
+**We’ll create a service account called demo-user in the ssp-demo namespace**
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: demo-user
-  namespace: blue-green 
+  namespace: ssp-demo 
 EOF
 ```
 
@@ -41,7 +41,7 @@ cat <<EOF | kubectl apply -f -
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  namespace: blue-green
+  namespace: ssp-demo
   name: poc-role
 rules:
 - apiGroups: ["", "extensions", "apps"]
@@ -52,7 +52,7 @@ EOF
 
 Confirm role creation using the following command:
 ```
-kubectl get roles -n blue-green 
+kubectl get roles -n ssp-demo 
 ```
 
 
@@ -64,11 +64,11 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: admin-view
-  namespace: blue-green
+  namespace: ssp-demo
 subjects:
 - kind: ServiceAccount
   name: demo-user
-  namespace: blue-green
+  namespace: ssp-demo
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -78,19 +78,19 @@ EOF
 
 **Confirm role binding creation using the following command:**
 ```
-kubectl get rolebindings --namespace blue-green
+kubectl get rolebindings --namespace ssp-demo
 ```
 
 
 ###Check user token name:
 
 ```
-$ kubectl describe sa demo-user -n blue-green
+$ kubectl describe sa demo-user -n ssp-demo
 Name:                demo-user
-Namespace:           blue-green
+Namespace:           ssp-demo
 Labels:              
 Annotations:         kubectl.kubernetes.io/last-applied-configuration:
-                       {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"name":"demo-user","namespace":"blue-green"}}
+                       {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"name":"demo-user","namespace":"ssp-demo"}}
 Image pull secrets:  
 Mountable secrets:   demo-user-token-k9qbl
 Tokens:              demo-user-token-k9qbl
@@ -100,7 +100,7 @@ Events:
 
 **Get service account token to be used to access Kubernetes  through kubectl command line.**
 ```
-export NAMESPACE="blue-green"
+export NAMESPACE="ssp-demo"
 export K8S_USER="demo-user"
 kubectl -n ${NAMESPACE} describe secret $(kubectl -n ${NAMESPACE} get secret | (grep ${K8S_USER} || echo "$_") | awk '{print $1}') | grep token: | awk '{print $2}'\n
           
@@ -161,11 +161,11 @@ clusters:
 contexts:
 - context:
     cluster: arn:aws:eks:us-west-2:695292474035:cluster/aws001-preprod-dev-eks
-    namespace: blue-green
+    namespace: ssp-demo
     user: demo-user
-  name: blue-green
+  name: ssp-demo
 
-current-context: blue-green
+current-context: ssp-demo
 kind: Config
 preferences: {}
 
@@ -194,5 +194,136 @@ dev-superapi-geba-654d6cdf56-wmw2t   1/1     Running   0          2d19h
 
 
 kubectl --kubeconfig ./config-demo-user get nodes
-Error from server (Forbidden): nodes is forbidden: User "system:serviceaccount:blue-green:demo-user" cannot list resource "nodes" in API group "" at the cluster scope
+Error from server (Forbidden): nodes is forbidden: User "system:serviceaccount:ssp-demo:demo-user" cannot list resource "nodes" in API group "" at the cluster scope
 ```
+
+
+# ssp-demo deployments with Argo Rollouts
+
+## Step 1: Installing Argo Rollouts
+
+Let’s start by creating a namespace that will be used for this demo `ssp-demo`
+
+```
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+```
+
+
+## Step 2: Create two services yaml
+You will notice that the blueGreen strategy requires two services: an activeService and a previewService. Both settings refer to a Kubernetes service resource as follows:
+
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name:  superapi-svc-active
+spec:
+  selector:
+    app:  superapi
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  8080
+```
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name:  superapi-svc-preview
+spec:
+  selector:
+    app:  superapi
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  8080
+```
+
+
+**we will use Kustomize to deploy everything**
+
+
+
+## Step 3: Deploying a rollout with Kustomize
+
+Argo Rollouts uses a replacement for a Deployment resource: a Rollout. The YAML for a Rollout is almost identical to a Deployment except that the apiVersion and Kind are different. In the spec you can add a strategy section to specify whether you want a blueGreen or a canary rollout.
+
+Here We are using Kustomize to deploy our rollout, With Kustomize, we can ensure we deploy our resources to a specific namespace. Below, that is the ssp-demo namespace. We also add a prefix and suffix to the names of Kubernetes resources we create and we add labels as well (commonLabels). For this to work properly with a rollout, you have to add the configurations section. Without it, Kustomize will not know what to do with the rollout resource (kind=rollout).
+
+Note that we also use a configMapGenerator that creates a ConfigMap that sets a welcome message. If you look at the rollout spec, you will see that the pod template uses it to set the WELCOME environment variable. The API that we deploy will respond with that message when you hit the root, for instance with curl.
+
+
+
+`kustomization.yaml`
+```
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ssp-demo
+ 
+nameSuffix: -geba
+namePrefix: dev-
+ 
+commonLabels:
+  app: superapi
+  version: v1
+  env: dev
+ 
+ 
+configurations:
+  - https://argoproj.github.io/argo-rollouts/features/kustomize/rollout-transform.yaml
+ 
+resources:
+#- namespace.yaml
+  - deployment.yaml
+  - service-active.yaml
+  - service-preview.yaml
+ 
+configMapGenerator:
+- name: superapi-config
+  literals:
+    - WELCOME=Hello from v1!
+    - PORT=8080 
+```
+
+
+
+**To deploy with Kustomize, we can run**
+
+```
+kubectl apply -k .
+```
+
+
+
+
+## Step 4: Checking the initial rollout with the UI
+
+hen we initially deploy our application, there is only one version of our app. The rollout uses a ReplicaSet to deploy two pods, similarly to a Deployment. Both the activeService and the previewService point to these two pods.
+
+Argo Rollouts has a UI you can start with:
+
+```
+kubectl argo rollouts dashboard -n blue-green
+```
+
+
+
+
+## Step 5: Upgrading to new application version v2
+
+We will now upgrade to a new version of the application: v2. To simulate this, we can simply modify the WELCOME message in the ConfigMapGenerator in kustomization.yaml. When we run kubectl apply -k . again, Kustomize will create a new ConfigMap with a different name (containing a hash) and will update that name in the pod template of the rollout. When you update the pod template of the rollout, the rollout knows it needs to upgrade with the blue-green strategy. This, again, is identical to how a deployment behaves. In the UI, we now see:
+
+
+
+There are now two revisions, both backed by a ReplicaSet. Each ReplicaSet controls two pods. One set of pods is for the active service, the other set for the preview. We can click on the rollout to see those details:
+
+
+Above, we can clearly see that revision one is the stable and active service. That is our initial v1 deployment. Revision 2 is the preview service, the v2 deployment. We can port forward to that service and view the welcome message:
+
+
+Above, we can clearly see the rollout now uses two ReplicaSets to run the active and preview pods. The rollout also modified the service selectors and the labels on the pods by adding a label like rollouts-pod-template-hash:758d6b4845. Each revision has its own hash.
