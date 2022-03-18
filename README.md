@@ -290,7 +290,7 @@ configurations:
  
 resources:
 #- namespace.yaml
-  - deployment.yaml
+  - rollout.yaml
   - service-active.yaml
   - service-preview.yaml
  
@@ -307,7 +307,7 @@ configMapGenerator:
 **To deploy with Kustomize, we can run**
 
 ```
-kubectl apply -k . --validate=false
+kubectl apply -k .
 ```
 
 
