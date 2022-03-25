@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: nginx:1.13
+        image: nginx:1.14
         ports:
         - containerPort: 8080
 
