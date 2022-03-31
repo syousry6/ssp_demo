@@ -16,13 +16,13 @@ metadata:
     app: metabase
 
 spec:
+  tls:
+    - hosts:
+        - nclouds-test.sspdemo.link
   rules:
-    - http:
+    - host: nclouds-test.sspdemo.link
+      http:
         paths:
-          - path: /*
-            backend:
-              serviceName: ssl-redirect
-              servicePort: use-annotation
           - path: /*
             backend:
               serviceName: metabase
