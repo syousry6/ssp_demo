@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metabase
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-2:425291338417:certificate/d4982b95-1d1c-40a6-b83c-6a68691bd158
+  namespace: ssp-demo-alb
+  labels:
+    app: metabase
+spec:
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: http-server
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http-server
+  selector:
+    app: metabase
+  type: LoadBalancer
